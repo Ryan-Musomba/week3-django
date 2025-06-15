@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    {% if user.is_authenticated %}
+    <div class="bg-white p-4 rounded shadow mb-4">
+        <h2 class="text-xl font-bold mb-2">Create Post</h2>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <textarea name="text" class="w-full p-2 border rounded mb-2" placeholder="What's on your mind?" required></textarea>
+            <input type="file" name="image" class="mb-2">
+            <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Post</button>
+        </form>
+    </div>
+    {% endif %}
+
+    <div class="space-y-4">
+        {% for post in posts %}
+        <div class="bg-white p-4 rounded shadow">
+            <div class="flex items-center mb-2">
+                <a href="{% url 'profile' post.user.username %}" class="font-bold">{{ post.user.username }}</a>
+                <span class="text-gray-500 text-sm ml-2">{{ post.created|timesince }} ago</span>
+            </div>
+            <p class="mb-2">{{ post.text }}</p>
+            {% if post.image %}
+                <img src="{{ post.image }}" alt="Post image" class="w-full rounded mb-2">
+            {% endif %}
+            <div class="flex items-center text-sm text-gray-500">
+                <form method="post" action="{% url 'like_post' post.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center mr-4">
+                        <span class="mr-1">{% if user in post.likes.all %}❤️{% else %}🤍{% endif %}</span>
+                        {{ post.likes.count }} likes
+                    </button>
+                </form>
+                <a href="{% url 'post' post.pk %}" class="text-blue-600">View post</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

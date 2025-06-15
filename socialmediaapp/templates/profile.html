@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ profile.username }}'s Profile{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white p-4 rounded shadow mb-4">
+        <div class="flex items-center mb-4">
+            {% if profile.picture %}
+                <img src="{{ profile.picture }}" alt="Profile picture" class="w-16 h-16 rounded-full mr-4">
+            {% endif %}
+            <div>
+                <h1 class="text-2xl font-bold">{{ profile.username }}</h1>
+                <p class="text-gray-600">{{ profile.bio }}</p>
+                <div class="flex mt-2 space-x-4 text-sm text-gray-500">
+                    <span>{{ followers_count }} followers</span>
+                    <span>{{ following_count }} following</span>
+                </div>
+                {% if user != profile %}
+                <form method="post" class="mt-2">
+                    {% csrf_token %}
+                    <input type="hidden" name="follow" value="1">
+                    <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">
+                        {% if is_following %}Unfollow{% else %}Follow{% endif %}
+                    </button>
+                </form>
+                {% endif %}
+            </div>
+        </div>
+
+        {% if user == profile %}
+        <div class="mt-4">
+            <h2 class="text-xl font-bold mb-2">Update Profile</h2>
+            <form method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <textarea name="bio" class="w-full p-2 border rounded mb-2" placeholder="Bio">{{ profile.bio }}</textarea>
+                <input type="file" name="picture" class="mb-2">
+                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded">Update</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="space-y-4">
+        {% for post in posts %}
+        <div class="bg-white p-4 rounded shadow">
+            <p>{{ post.text }}</p>
+            {% if post.image %}
+                <img src="{{ post.image }}" alt="Post image" class="w-full rounded mt-2">
+            {% endif %}
+            <div class="flex items-center text-sm text-gray-500 mt-2">
+                <form method="post" action="{% url 'like_post' post.id %}">
+                    {% csrf_token %}
+                    <button type="submit" class="flex items-center">
+                        <span class="mr-1">{% if user in post.likes.all %}❤️{% else %}🤍{% endif %}</span>
+                        {{ post.likes.count }}
+                    </button>
+                </form>
+                <span class="ml-4">{{ post.created|timesince }} ago</span>
+                <a href="{% url 'post' post.pk %}" class="ml-4 text-blue-600">View post</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
